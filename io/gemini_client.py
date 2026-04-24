@@ -86,7 +86,13 @@ class GeminiImageClient:
         self.api_key = api_key
         self.model_name = model_name
 
-    def generate_content(self, parts: list[dict[str, Any]]) -> dict[str, Any]:
+    def generate_content(
+        self,
+        parts: list[dict[str, Any]],
+        *,
+        aspect_ratio: str | None = None,
+        image_size: str | None = None,
+    ) -> dict[str, Any]:
         """直接调用 Gemini generateContent 接口。"""
 
         url = self._resolve_api_endpoint().format(
@@ -101,6 +107,9 @@ class GeminiImageClient:
                 }
             ]
         }
+        image_config = _build_image_config(aspect_ratio, image_size)
+        if image_config:
+            payload["generationConfig"] = {"imageConfig": image_config}
         request = Request(
             url=url,
             data=json.dumps(payload).encode("utf-8"),
@@ -152,3 +161,15 @@ class GeminiImageClient:
         if status_code >= 500:
             return f"Gemini API temporary server error: {body}"
         return f"Gemini API request failed with status {status_code}: {body}"
+
+
+def _build_image_config(
+    aspect_ratio: str | None,
+    image_size: str | None,
+) -> dict[str, str] | None:
+    image_config: dict[str, str] = {}
+    if aspect_ratio:
+        image_config["aspectRatio"] = aspect_ratio
+    if image_size:
+        image_config["imageSize"] = image_size
+    return image_config or None

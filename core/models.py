@@ -22,6 +22,8 @@ class ImageRequest:
     output_format: str = "separate"
     file_format: str = "png"
     seed: int | None = None
+    aspect_ratio: str | None = None
+    image_size: str | None = None
     preview: bool = False
 
 

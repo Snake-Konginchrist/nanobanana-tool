@@ -48,6 +48,7 @@ def _add_generate_parser(subparsers: argparse._SubParsersAction, help_text: str)
     parser.add_argument("--output-name")
     parser.add_argument("--format", choices=["grid", "separate"], default="separate")
     parser.add_argument("--seed", type=int)
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
 
 
@@ -57,6 +58,7 @@ def _add_edit_parser(subparsers: argparse._SubParsersAction, help_text: str) -> 
     parser.add_argument("prompt")
     parser.add_argument("--output-dir")
     parser.add_argument("--output-name")
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
 
 
@@ -66,6 +68,7 @@ def _add_restore_parser(subparsers: argparse._SubParsersAction, help_text: str) 
     parser.add_argument("prompt")
     parser.add_argument("--output-dir")
     parser.add_argument("--output-name")
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
 
 
@@ -81,6 +84,7 @@ def _add_icon_parser(subparsers: argparse._SubParsersAction, help_text: str) -> 
     parser.add_argument("--format", choices=["png", "jpeg"], default="png")
     parser.add_argument("--background", default="transparent")
     parser.add_argument("--corners", choices=["rounded", "sharp"], default="rounded")
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
 
 
@@ -96,6 +100,7 @@ def _add_pattern_parser(subparsers: argparse._SubParsersAction, help_text: str) 
     parser.add_argument("--density", choices=["sparse", "medium", "dense"], default="medium")
     parser.add_argument("--colors", choices=["mono", "duotone", "colorful"], default="colorful")
     parser.add_argument("--repeat", choices=["tile", "mirror"], default="tile")
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
 
 
@@ -111,6 +116,7 @@ def _add_story_parser(subparsers: argparse._SubParsersAction, help_text: str) ->
     parser.add_argument("--layout", choices=["separate", "grid", "comic"], default="separate")
     parser.add_argument("--transition", choices=["smooth", "dramatic", "fade"], default="smooth")
     parser.add_argument("--format", choices=["storyboard", "individual"], default="individual")
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
 
 
@@ -126,6 +132,7 @@ def _add_diagram_parser(subparsers: argparse._SubParsersAction, help_text: str) 
     parser.add_argument("--complexity", choices=["simple", "detailed", "comprehensive"], default="detailed")
     parser.add_argument("--colors", choices=["mono", "accent", "categorical"], default="accent")
     parser.add_argument("--annotations", choices=["minimal", "detailed"], default="detailed")
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
 
 
@@ -136,4 +143,18 @@ def _add_natural_parser(subparsers: argparse._SubParsersAction, help_text: str) 
     parser.add_argument("--reference")
     parser.add_argument("--output-dir")
     parser.add_argument("--output-name")
+    _add_image_config_args(parser)
     parser.add_argument("--preview", action="store_true")
+
+
+def _add_image_config_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--aspect",
+        dest="aspect_ratio",
+        help="硬控制输出宽高比，例如 1:1、3:4、9:16、16:9。",
+    )
+    parser.add_argument(
+        "--image-size",
+        choices=["512", "1K", "2K", "4K"],
+        help="硬控制输出尺寸档位，可选 512、1K、2K、4K。",
+    )

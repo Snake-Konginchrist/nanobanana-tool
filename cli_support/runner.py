@@ -27,6 +27,8 @@ def execute_command(
                 variations=raw.get("variations"),
                 output_format=raw["format"],
                 seed=raw.get("seed"),
+                aspect_ratio=raw.get("aspect_ratio"),
+                image_size=raw.get("image_size"),
                 preview=raw.get("preview", False),
             )
         )
@@ -38,6 +40,8 @@ def execute_command(
                 mode=command,
                 output_dir=raw.get("output_dir"),
                 output_name=raw.get("output_name"),
+                aspect_ratio=raw.get("aspect_ratio"),
+                image_size=raw.get("image_size"),
                 preview=raw.get("preview", False),
             )
         )
@@ -51,6 +55,8 @@ def execute_command(
                 output_dir=raw.get("output_dir"),
                 output_name=raw.get("output_name"),
                 file_format=raw["format"],
+                aspect_ratio=raw.get("aspect_ratio"),
+                image_size=raw.get("image_size"),
                 preview=raw.get("preview", False),
             )
         )
@@ -63,6 +69,8 @@ def execute_command(
                 reference_image=raw.get("reference"),
                 output_dir=raw.get("output_dir"),
                 output_name=raw.get("output_name"),
+                aspect_ratio=raw.get("aspect_ratio"),
+                image_size=raw.get("image_size"),
                 preview=raw.get("preview", False),
             )
         )
@@ -74,6 +82,8 @@ def execute_command(
             reference_image=raw.get("reference"),
             output_dir=raw.get("output_dir"),
             output_name=raw.get("output_name"),
+            aspect_ratio=raw.get("aspect_ratio"),
+            image_size=raw.get("image_size"),
             preview=raw.get("preview", False),
         )
         return service.generate_story_sequence(request, raw)
@@ -86,6 +96,8 @@ def execute_command(
                 reference_image=raw.get("reference"),
                 output_dir=raw.get("output_dir"),
                 output_name=raw.get("output_name"),
+                aspect_ratio=raw.get("aspect_ratio"),
+                image_size=raw.get("image_size"),
                 preview=raw.get("preview", False),
             )
         )

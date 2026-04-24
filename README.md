@@ -15,6 +15,13 @@
 - `diagram`：生成流程图、架构图、数据库图等
 - `nanobanana`：自然语言入口，自动判断要调用哪类命令
 
+现在所有会返回图片的命令都支持 Gemini 官方 `generationConfig.imageConfig` 的硬控制参数：
+
+- `--aspect`
+  控制输出宽高比
+- `--image-size`
+  控制输出尺寸档位
+
 ## 文件说明
 
 - `cli.py`
@@ -94,6 +101,7 @@ python -m nanobanana_tool --help
 ```bash
 python -m nanobanana_tool generate "a watercolor fox in snow" --count=3 --styles=watercolor,sketch
 python -m nanobanana_tool generate "anime portrait" --reference /tmp/ref.png --output-dir /tmp/out --output-name portrait
+python -m nanobanana_tool generate "anime portrait" --aspect 9:16 --image-size 2K
 ```
 
 ### 2. 编辑图片
@@ -101,27 +109,43 @@ python -m nanobanana_tool generate "anime portrait" --reference /tmp/ref.png --o
 ```bash
 python -m nanobanana_tool edit input.png "add sunglasses to the character" --preview
 python -m nanobanana_tool edit /data/in.png "add sunglasses" --output-dir /data/out --output-name in_edited
+python -m nanobanana_tool edit input.png "convert this into a wide banner" --aspect 16:9 --image-size 2K
 ```
 
 ### 3. 修复图片
 
 ```bash
 python -m nanobanana_tool restore old_photo.jpg "remove scratches and improve clarity"
+python -m nanobanana_tool restore old_photo.jpg "remove scratches and improve clarity" --aspect 4:5 --image-size 1K
 ```
 
 ### 4. 生成图标
 
 ```bash
 python -m nanobanana_tool icon "coffee shop logo" --type=favicon --sizes=16,32,64
+python -m nanobanana_tool icon "coffee shop logo" --type=app-icon --aspect 1:1 --image-size 1K
 ```
 
-### 5. 自然语言入口
+### 5. 生成图案 / 纹理
+
+```bash
+python -m nanobanana_tool pattern "retro geometric wallpaper" --size 512x512 --image-size 2K
+```
+
+注意：
+
+- `pattern --size` 是纹理的 tile 逻辑尺寸，会写入 prompt
+- `--image-size` 是 Gemini API 的硬控制输出尺寸
+- 两者不是一回事，可以同时使用
+
+### 6. 自然语言入口
 
 ```bash
 python -m nanobanana_tool nanobanana "给我做一个咖啡店 app 图标"
 python -m nanobanana_tool nanobanana "把 game/assets/hero.png 改成惊讶表情" --preview
 python -m nanobanana_tool nanobanana "画一个用户登录流程图"
 python -m nanobanana_tool nanobanana "做一张海报" --reference /tmp/ref.png --output-dir /tmp/out --output-name poster
+python -m nanobanana_tool nanobanana "做一张角色海报" --aspect 3:4 --image-size 2K
 ```
 
 也兼容斜杠命令风格：
@@ -163,6 +187,10 @@ nanobanana-output/
   指定生成结果保存目录
 - `--output-name`
   指定输出文件基名；如果一次生成多张，后续文件会自动追加编号
+- `--aspect`
+  使用 Gemini 的 `generationConfig.imageConfig.aspectRatio` 硬控制输出比例
+- `--image-size`
+  使用 Gemini 的 `generationConfig.imageConfig.imageSize` 硬控制输出尺寸档位
 
 ## 当前实现边界
 
@@ -170,3 +198,6 @@ nanobanana-output/
 - `grid`、`storyboard` 这类参数目前保留接口，但没有额外做后处理拼图
 - 自然语言路由只负责在原项目已有命令之间选路，不会额外脑补新功能
 - 如果 Gemini 返回的响应结构变化，可能需要同步调整 `service.py` 的图片提取逻辑
+- `--image-size` 目前按 Gemini 官方枚举限制为 `512`、`1K`、`2K`、`4K`
+- `--aspect` 目前按 Gemini 官方枚举限制为 `1:1`、`1:4`、`4:1`、`1:8`、`8:1`、`2:3`、`3:2`、`3:4`、`4:3`、`4:5`、`5:4`、`9:16`、`16:9`、`21:9`
+- 并不是所有模型都支持全部尺寸档位；默认模型 `gemini-3.1-flash-image-preview` 支持硬控制，若切到其他模型需以该模型能力为准

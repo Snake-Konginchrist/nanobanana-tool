@@ -46,6 +46,8 @@ class NanoBananaService:
             try:
                 response = self.client.generate_content(
                     self._build_generation_parts(current_prompt, request),
+                    aspect_ratio=request.aspect_ratio,
+                    image_size=request.image_size,
                 )
                 image_data = self._extract_image_base64(response)
                 if not image_data:
@@ -93,7 +95,11 @@ class NanoBananaService:
         ]
 
         try:
-            response = self.client.generate_content(parts)
+            response = self.client.generate_content(
+                parts,
+                aspect_ratio=request.aspect_ratio,
+                image_size=request.image_size,
+            )
             result_image = self._extract_image_base64(response)
             if not result_image:
                 return ImageResponse(False, f"Failed to {request.mode} image.", [], "No image data in response.")
@@ -127,6 +133,8 @@ class NanoBananaService:
             try:
                 response = self.client.generate_content(
                     self._build_generation_parts(step_prompt, request),
+                    aspect_ratio=request.aspect_ratio,
+                    image_size=request.image_size,
                 )
                 image_data = self._extract_image_base64(response)
                 if not image_data:

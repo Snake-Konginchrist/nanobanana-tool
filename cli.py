@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+
 from .cli_support.parser import build_parser
 from .cli_support.runner import execute_command, print_response
 from .cli_support.validators import validate_command
@@ -24,6 +26,8 @@ def main(argv: list[str] | None = None) -> int:
             args.reference,
             args.output_dir,
             args.output_name,
+            args.aspect_ratio,
+            args.image_size,
             args.preview,
         )
     return _run_structured_command(command, args)
@@ -42,6 +46,8 @@ def _run_natural_language(
     reference: str | None,
     output_dir: str | None,
     output_name: str | None,
+    aspect_ratio: str | None,
+    image_size: str | None,
     preview: bool,
 ) -> int:
     service = _build_service()
@@ -49,7 +55,10 @@ def _run_natural_language(
     routed_args["reference"] = reference
     routed_args["output_dir"] = output_dir
     routed_args["output_name"] = output_name
+    routed_args["aspect_ratio"] = aspect_ratio
+    routed_args["image_size"] = image_size
     routed_args["preview"] = preview
+    validate_command(routed_command, argparse.Namespace(**routed_args))
     response = execute_command(service, routed_command, routed_args)
     return print_response(response)
 
