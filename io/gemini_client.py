@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import os
+from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -26,8 +27,42 @@ class AuthConfig:
     api_key: str
 
 
+def _load_env_file() -> None:
+    """自动查找并加载最近的 .env 文件。"""
+
+    cursor = Path.cwd()
+    for parent in [cursor] + list(cursor.parents):
+        env_path = parent / ".env"
+        if env_path.exists():
+            _parse_and_set_env(env_path)
+            return
+        env_path = parent / "nanobanana_tool" / ".env"
+        if env_path.exists():
+            _parse_and_set_env(env_path)
+            return
+
+
+def _parse_and_set_env(env_path: Path) -> None:
+    """解析 .env 文件并设置环境变量。"""
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" in line:
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+            elif value.startswith("'") and value.endswith("'"):
+                value = value[1:-1]
+            if key and value:
+                os.environ.setdefault(key, value)
+
+
 def validate_authentication() -> AuthConfig:
     """按原项目的优先级读取 API Key。"""
+    _load_env_file()
 
     for name in (
         "NANOBANANA_API_KEY",

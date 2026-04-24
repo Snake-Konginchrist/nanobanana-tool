@@ -47,8 +47,20 @@ def generate_filename(
     file_format: str = "png",
     index: int = 0,
     output_dir: str | Path | None = None,
+    output_name: str | None = None,
 ) -> str:
     """把 prompt 变成相对友好的输出文件名，并避免重名覆盖。"""
+
+    if output_name:
+        extension = "jpg" if file_format == "jpeg" else "png"
+        output_dir = ensure_output_directory(output_dir)
+        filename = output_name if output_name.endswith(f".{extension}") else f"{output_name}.{extension}"
+        counter = index if index > 0 else 1
+        while (output_dir / filename).exists():
+            name_part = output_name.rsplit(".", 1)[0] if "." in output_name else output_name
+            filename = f"{name_part}_{counter}.{extension}"
+            counter += 1
+        return filename
 
     base_name = re.sub(r"[^a-z0-9\s]", "", prompt.lower())
     base_name = re.sub(r"\s+", "_", base_name).strip("_")[:32]

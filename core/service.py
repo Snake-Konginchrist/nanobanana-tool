@@ -59,6 +59,7 @@ class NanoBananaService:
                     request.file_format,
                     index - 1,
                     request.output_dir,
+                    request.output_name,
                 )
                 generated_files.append(
                     str(save_image_from_base64(image_data, filename, request.output_dir))
@@ -102,6 +103,7 @@ class NanoBananaService:
                 "png",
                 0,
                 request.output_dir,
+                request.output_name,
             )
             generated = [
                 str(save_image_from_base64(result_image, filename, request.output_dir))
@@ -135,6 +137,7 @@ class NanoBananaService:
                     "png",
                     step_number - 1,
                     request.output_dir,
+                    request.output_name,
                 )
                 generated_files.append(
                     str(save_image_from_base64(image_data, filename, request.output_dir))
