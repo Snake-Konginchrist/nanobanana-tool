@@ -1,0 +1,119 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import json
+import os
+from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote
+from urllib.request import Request, urlopen
+
+
+DEFAULT_API_ENDPOINT = (
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    "{model}:generateContent?key={api_key}"
+)
+
+
+class GeminiClientError(RuntimeError):
+    """统一封装 Gemini 接口错误。"""
+
+    pass
+
+
+@dataclass(frozen=True)
+class AuthConfig:
+    api_key: str
+
+
+def validate_authentication() -> AuthConfig:
+    """按原项目的优先级读取 API Key。"""
+
+    for name in (
+        "NANOBANANA_API_KEY",
+        "NANOBANANA_GEMINI_API_KEY",
+        "NANOBANANA_GOOGLE_API_KEY",
+        "GEMINI_API_KEY",
+        "GOOGLE_API_KEY",
+    ):
+        value = os.environ.get(name)
+        if value:
+            return AuthConfig(api_key=value)
+
+    raise GeminiClientError(
+        "No API key found. Set NANOBANANA_API_KEY, NANOBANANA_GEMINI_API_KEY, "
+        "NANOBANANA_GOOGLE_API_KEY, GEMINI_API_KEY, or GOOGLE_API_KEY."
+    )
+
+
+class GeminiImageClient:
+    def __init__(self, api_key: str, model_name: str) -> None:
+        self.api_key = api_key
+        self.model_name = model_name
+
+    def generate_content(self, parts: list[dict[str, Any]]) -> dict[str, Any]:
+        """直接调用 Gemini generateContent 接口。"""
+
+        url = self._resolve_api_endpoint().format(
+            model=quote(self.model_name, safe=""),
+            api_key=quote(self.api_key, safe=""),
+        )
+        payload = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": parts,
+                }
+            ]
+        }
+        request = Request(
+            url=url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        try:
+            with urlopen(request, timeout=120) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except HTTPError as error:
+            body = error.read().decode("utf-8", errors="replace")
+            raise GeminiClientError(self._format_http_error(error.code, body)) from error
+        except URLError as error:
+            raise GeminiClientError(f"Failed to reach Gemini API: {error.reason}") from error
+
+    @staticmethod
+    def _resolve_api_endpoint() -> str:
+        """允许通过环境变量覆盖官方接口地址或代理端点。"""
+
+        proxy_endpoint = os.environ.get("NANOBANANA_PROXY_ENDPOINT")
+        if proxy_endpoint:
+            return proxy_endpoint
+
+        base_url = os.environ.get("NANOBANANA_API_BASE_URL")
+        if base_url:
+            return (
+                base_url.rstrip("/")
+                + "/models/{model}:generateContent?key={api_key}"
+            )
+
+        return DEFAULT_API_ENDPOINT
+
+    @staticmethod
+    def _format_http_error(status_code: int, body: str) -> str:
+        """把常见 HTTP 错误转成更可读的信息。"""
+
+        body_lower = body.lower()
+        if "api key not valid" in body_lower:
+            return "Authentication failed: invalid API key."
+        if "permission denied" in body_lower:
+            return "Authentication failed: API key lacks required permissions."
+        if "quota" in body_lower and "exceeded" in body_lower:
+            return "API quota exceeded."
+        if status_code == 400:
+            return f"Bad request to Gemini API: {body}"
+        if status_code == 403:
+            return f"Authentication failed: {body}"
+        if status_code >= 500:
+            return f"Gemini API temporary server error: {body}"
+        return f"Gemini API request failed with status {status_code}: {body}"

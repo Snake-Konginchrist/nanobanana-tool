@@ -1,0 +1,43 @@
+# Environment files
+.env
+.env.local
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Test and tool cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated images
+nanobanana-output/
+outputs/
+
+# macOS
+.DS_Store
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Coverage
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# Editors
+.vscode/
+.idea/
